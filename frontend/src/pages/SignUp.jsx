@@ -35,6 +35,7 @@ function SignUp() {
             dispatch(setUserData(result.data))
             setErr("")
             setLoading(false)
+            navigate("/")
         } catch (error) {
             setErr(error?.response?.data?.message)
              setLoading(false)
@@ -55,6 +56,7 @@ function SignUp() {
         mobile
     },{withCredentials:true})
    dispatch(setUserData(data))
+   navigate("/")
   } catch (error) {
     console.log(error)
   }
