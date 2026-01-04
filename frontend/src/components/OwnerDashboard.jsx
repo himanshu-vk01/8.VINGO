@@ -3,7 +3,7 @@ import Nav from './Nav.jsx'
 import { useSelector } from 'react-redux'
 import { FaUtensils, FaPen, FaShoppingBag, FaCheckCircle, FaClock, FaMotorcycle, FaChartLine } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
-import OwnerItemCard from './ownerItemCard.jsx';
+import OwnerItemCard from './OwnerItemCard.jsx';
 import OwnerOrderCard from './OwnerOrderCard.jsx';
 import { MdRestaurantMenu } from "react-icons/md";
 
