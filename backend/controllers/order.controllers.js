@@ -1,3 +1,4 @@
+import mongoose from "mongoose"
 import DeliveryAssignment from "../models/deliveryAssignment.model.js"
 import Order from "../models/order.model.js"
 import Shop from "../models/shop.model.js"
@@ -5,6 +6,7 @@ import User from "../models/user.model.js"
 import { sendDeliveryOtpMail } from "../utils/mail.js"
 import RazorPay from "razorpay"
 import dotenv from "dotenv"
+import uploadOnCloudinary from "../utils/cloudinary.js"
 
 dotenv.config()
 let instance = new RazorPay({
@@ -516,19 +518,87 @@ export const verifyDeliveryOtp = async (req, res) => {
             return res.status(400).json({ message: "Invalid/Expired Otp" })
         }
 
+        // Upload delivery photo if provided
+        let deliveryPhoto = null
+        if (req.file) {
+            deliveryPhoto = await uploadOnCloudinary(req.file.path)
+        }
+
         shopOrder.status = "delivered"
-        shopOrder.deliveredAt = Date.now()
+        shopOrder.deliveredAt = new Date()
+        if (deliveryPhoto) {
+            shopOrder.deliveryPhoto = deliveryPhoto
+        }
         await order.save()
-        await DeliveryAssignment.deleteOne({
+        
+        // Update assignment status to completed instead of deleting
+        await DeliveryAssignment.updateOne(
+            {
             shopOrderId: shopOrder._id,
             order: order._id,
             assignedTo: shopOrder.assignedDeliveryBoy
-        })
+            },
+            {
+                status: "completed"
+            }
+        )
 
         return res.status(200).json({ message: "Order Delivered Successfully!" })
 
     } catch (error) {
         return res.status(500).json({ message: `verify delivery otp error ${error}` })
+    }
+}
+
+export const getDeliveryBoyStatistics = async (req, res) => {
+    try {
+        const deliveryBoyId = req.userId
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        // Get orders where this delivery boy delivered today
+        // Use aggregation to properly filter nested shopOrders
+        const deliveredOrders = await Order.aggregate([
+            { $unwind: "$shopOrders" },
+            {
+                $match: {
+                    "shopOrders.assignedDeliveryBoy": new mongoose.Types.ObjectId(deliveryBoyId),
+                    "shopOrders.status": "delivered",
+                    "shopOrders.deliveredAt": { $gte: today, $ne: null }
+                }
+            }
+        ])
+
+        const totalToday = deliveredOrders.length
+        const delivered = deliveredOrders.length
+        
+        // Get in progress orders (assigned but not delivered)
+        // Check both assignment status and order status
+        const inProgressAssignments = await DeliveryAssignment.countDocuments({
+            assignedTo: deliveryBoyId,
+            status: "assigned"
+        })
+
+        // Also check if there are any orders in "out of delivery" status
+        const inProgressOrders = await Order.countDocuments({
+            "shopOrders.assignedDeliveryBoy": deliveryBoyId,
+            "shopOrders.status": "out of delivery"
+        })
+
+        const inProgress = Math.max(inProgressAssignments, inProgressOrders)
+
+        // Calculate earnings (assuming ₹50 per delivery)
+        const totalEarnings = delivered * 50
+
+        return res.status(200).json({
+            totalToday,
+            delivered,
+            inProgress,
+            totalEarnings
+        })
+
+    } catch (error) {
+        return res.status(500).json({ message: `get delivery boy statistics error ${error}` })
     }
 }
 

@@ -1,9 +1,9 @@
 import React from 'react'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaRegEye } from "react-icons/fa";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from "axios"
 import { serverUrl } from '../App';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
@@ -16,9 +16,17 @@ function SignUp() {
     const hoverColor = "#e64323";
     const bgColor = "#fff9f6";
     const borderColor = "#ddd";
+    const [searchParams] = useSearchParams();
+    const roleFromUrl = searchParams.get('role');
     const [showPassword, setShowPassword] = useState(false)
-    const [role, setRole] = useState("user")
+    const [role, setRole] = useState(roleFromUrl || "user")
     const navigate=useNavigate()
+    
+    useEffect(() => {
+        if (roleFromUrl && ["user", "owner", "deliveryBoy"].includes(roleFromUrl)) {
+            setRole(roleFromUrl);
+        }
+    }, [roleFromUrl]);
     const [fullName,setFullName]=useState("")
     const [email,setEmail]=useState("")
     const [password,setPassword]=useState("")

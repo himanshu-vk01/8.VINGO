@@ -47,6 +47,10 @@ otpExpires:{
 deliveredAt:{
     type:Date,
     default:null
+},
+deliveryPhoto:{
+    type:String,
+    default:null
 }
 
 }, { timestamps: true })

@@ -6,6 +6,7 @@ import ForgotPassword from './pages/ForgotPassword'
 import useGetCurrentUser from './hooks/useGetCurrentUser'
 import { useDispatch, useSelector } from 'react-redux'
 import Home from './pages/Home'
+import Landing from './pages/Landing'
 import useGetCity from './hooks/useGetCity'
 import useGetMyshop from './hooks/useGetMyShop'
 import CreateEditShop from './pages/CreateEditShop'
@@ -55,7 +56,7 @@ return ()=>{
     <Route path='/signup' element={!userData?<SignUp/>:<Navigate to={"/"}/>}/>
     <Route path='/signin' element={!userData?<SignIn/>:<Navigate to={"/"}/>}/>
       <Route path='/forgot-password' element={!userData?<ForgotPassword/>:<Navigate to={"/"}/>}/>
-      <Route path='/' element={userData?<Home/>:<Navigate to={"/signin"}/>}/>
+      <Route path='/' element={userData?<Home/>:<Landing/>}/>
 <Route path='/create-edit-shop' element={userData?<CreateEditShop/>:<Navigate to={"/signin"}/>}/>
 <Route path='/add-item' element={userData?<AddItem/>:<Navigate to={"/signin"}/>}/>
 <Route path='/edit-item/:itemId' element={userData?<EditItem/>:<Navigate to={"/signin"}/>}/>
