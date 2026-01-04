@@ -1,5 +1,5 @@
 import React from 'react'
-import Nav from './NaV.JSX'
+import Nav from './Nav.jsx'
 import { useSelector } from 'react-redux'
 import axios from 'axios'
 import { serverUrl } from '../App'
